@@ -2786,3 +2786,52 @@ Tab8:AddButton({
 })
 
 
+
+local AutoBoss = false
+
+Tab8:AddToggle({
+	Name = "Auto Boss",
+	Default = false,
+	Callback = function(v)
+		AutoBoss = v
+
+		task.spawn(function()
+			while AutoBoss do
+				pcall(function()
+					local plr = game.Players.LocalPlayer
+					local char = plr.Character
+					local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+					local EventMobs = workspace:WaitForChild("World Mobs"):WaitForChild("Event Mobs")
+
+					local Boss
+
+					for _,v in ipairs(EventMobs:GetChildren()) do
+						if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") then
+							Boss = v
+							break
+						end
+					end
+
+					if Boss and hrp then
+						hrp.CFrame = Boss.HumanoidRootPart.CFrame * CFrame.new(0,22,0)
+						hrp.AssemblyLinearVelocity = Vector3.zero
+
+						game:GetService("ReplicatedStorage")
+							:WaitForChild("Packages")
+							:WaitForChild("_Index")
+							:WaitForChild("sleitnick_knit@1.4.7")
+							:WaitForChild("knit")
+							:WaitForChild("Services")
+							:WaitForChild("SkillManager")
+							:WaitForChild("RE")
+							:WaitForChild("LockedOnChanged")
+							:FireServer(Boss)
+					end
+				end)
+
+				task.wait(0.01)
+			end
+		end)
+	end
+})
