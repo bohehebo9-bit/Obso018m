@@ -4,7 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Window = OrionLib:MakeWindow({
-	Name = "Dragon Blox V1.8",
+	Name = "Dragon Blox V2",
 	HidePremium = false,
 	SaveConfig = true,
 	ConfigFolder = "Config"
@@ -46,6 +46,12 @@ local Tab6 = Window:MakeTab({
 
 local Tab7 = Window:MakeTab({
 	Name = "Dungeons Great 🟣",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Tab8 = Window:MakeTab({
+	Name = "Dungeon Premium",
 	Icon = "rbxassetid://4483345998",
 	PremiumOnly = false
 })
@@ -2485,5 +2491,84 @@ Tab7:AddToggle({
 				task.wait(6.5)
 			end
 		end)
+	end
+})
+local AutoStartDungeonV2 = false
+
+Tab8:AddToggle({
+	Name = "Auto Start Work All Dungeon V2",
+	Default = false,
+	Callback = function(Value)
+		AutoStartDungeonV2 = Value
+
+		if AutoStartDungeonV2 then
+			task.spawn(function()
+				local EventMobs = workspace:WaitForChild("World Mobs"):WaitForChild("Event Mobs")
+
+				while AutoStartDungeonV2 do
+					local BossFound = nil
+
+					-- Tìm boss có humanoid và đang full máu
+					for _, Boss in pairs(EventMobs:GetChildren()) do
+						local Humanoid = Boss:FindFirstChildWhichIsA("Humanoid")
+
+						if Humanoid and Humanoid.Health > 0 and Humanoid.Health >= Humanoid.MaxHealth then
+							BossFound = Boss
+							break
+						end
+					end
+
+					if BossFound then
+						local Humanoid = BossFound:FindFirstChildWhichIsA("Humanoid")
+
+						-- Đợi boss chết
+						while AutoStartDungeonV2
+							and BossFound.Parent
+							and Humanoid
+							and Humanoid.Health > 0 do
+							task.wait(1)
+						end
+
+						if not AutoStartDungeonV2 then
+							break
+						end
+
+						task.wait(5)
+
+						pcall(function()
+							game:GetService("ReplicatedStorage")
+								:WaitForChild("Packages")
+								:WaitForChild("_Index")
+								:WaitForChild("sleitnick_knit@1.4.7")
+								:WaitForChild("knit")
+								:WaitForChild("Services")
+								:WaitForChild("DungeonLobbyService")
+								:WaitForChild("RF")
+								:WaitForChild("StartDungeon")
+								:InvokeServer()
+						end)
+
+						-- Đợi boss mới xuất hiện full máu rồi mới lặp tiếp
+						repeat
+							task.wait(1)
+
+							BossFound = nil
+
+							for _, Boss in pairs(EventMobs:GetChildren()) do
+								local H = Boss:FindFirstChildWhichIsA("Humanoid")
+
+								if H and H.Health > 0 and H.Health >= H.MaxHealth then
+									BossFound = Boss
+									break
+								end
+							end
+
+						until not AutoStartDungeonV2 or BossFound
+					end
+
+					task.wait(1)
+				end
+			end)
+		end
 	end
 })
