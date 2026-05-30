@@ -2672,3 +2672,117 @@ Tab8:AddToggle({
         end)
     end
 })
+
+
+local tracking = false
+local kills = 0
+local totalDamage = 0
+local lastHealth = 0
+local lastTime = tick()
+
+local dpsLabel = Tab:AddLabel("HP Loss/s: 0")
+local killPerHourLabel = Tab:AddLabel("Kill/Hour: 0")
+local killCountLabel = Tab:AddLabel("Total Kills: 0")
+
+local function updateStats(dps, kph)
+    dpsLabel:Set("HP Loss/s: " .. math.floor(dps))
+    killPerHourLabel:Set("Kill/Hour: " .. math.floor(kph))
+    killCountLabel:Set("Total Kills: " .. kills)
+end
+
+Tab8:AddToggle({
+    Name = "Check boss  ",
+    Default = false,
+    Callback = function(state)
+        tracking = state
+        
+        if tracking then
+            kills = 0
+            totalDamage = 0
+            lastHealth = 0
+            lastTime = tick()
+            
+            OrionLib:MakeNotification({
+                Name = "Tracker Started",
+                Content = "Đang theo dõi HP Loss & Kill...",
+                Image = "rbxassetid://4483362458",
+                Time = 3
+            })
+            
+            spawn(function()
+                while tracking do
+                    local bossFolder = workspace:WaitForChild("World Mobs"):WaitForChild("Event Mobs")
+                    
+                    local boss = nil
+                    for _, mob in ipairs(bossFolder:GetChildren()) do
+                        if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 and mob:FindFirstChild("HumanoidRootPart") then
+                            boss = mob
+                            break
+                        end
+                    end
+                    
+                    if boss then
+                        local humanoid = boss.Humanoid
+                        local currentHealth = humanoid.Health
+                        
+                        -- Tính HP Loss mỗi giây
+                        if lastHealth > 0 then
+                            local damageThisTick = lastHealth - currentHealth
+                            if damageThisTick > 0 then
+                                totalDamage = totalDamage + damageThisTick
+                            end
+                        end
+                        
+                        local currentTime = tick()
+                        local timePassed = currentTime - lastTime
+                        
+                        local currentDPS = 0
+                        if timePassed >= 1 then
+                            currentDPS = totalDamage / timePassed
+                            totalDamage = 0
+                            lastTime = currentTime
+                        end
+                        
+                        -- Phát hiện Kill
+                        if lastHealth > 0 and currentHealth <= 0 then
+                            kills = kills + 1
+                        end
+                        
+                        lastHealth = currentHealth
+                        
+                        -- Update Stats
+                        local totalTime = currentTime - (lastTime - timePassed) + 1
+                        local killPerHour = (kills / math.max(totalTime, 1)) * 3600
+                        
+                        updateStats(currentDPS, killPerHour)
+                        
+                    else
+                        lastHealth = 0
+                    end
+                    
+                    wait(0.1)  -- Giảm tần suất vì không cần farm
+                end
+            end)
+            
+        else
+            OrionLib:MakeNotification({
+                Name = "Tracker Stopped",
+                Content = "Đã dừng theo dõi boss",
+                Image = "rbxassetid://4483362458",
+                Time = 3
+            })
+        end
+    end
+})
+
+Tab8:AddButton({
+    Name = "Reset Stats",
+    Callback = function()
+        kills = 0
+        totalDamage = 0
+        lastHealth = 0
+        updateStats(0, 0)
+    end
+})
+
+
