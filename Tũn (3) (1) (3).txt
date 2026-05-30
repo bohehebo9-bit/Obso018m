@@ -2087,11 +2087,11 @@ Tab6:AddToggle({
 })
 
 --// AUTO PHÊ PHA V2
-local AutoPhePha = false
+local AutoPhePha = True
 
 Tab6:AddToggle({
 	Name = "Auto Phê Pha V2",
-	Default = false,
+	Default = True,
 	Callback = function(Value)
 		AutoPhePha = Value
 
@@ -2571,4 +2571,104 @@ Tab8:AddToggle({
 			end)
 		end
 	end
+})
+local farming = false
+
+Tab8:AddToggle({
+    Name = "Auto Kill Boss Premium",
+    Default = false,
+    Callback = function(state)
+        farming = state
+        
+        if farming then
+            OrionLib:MakeNotification({
+                Name = "Farm Started",
+                Content = "Đang farm skill trước mặt boss...",
+                Image = "rbxassetid://4483362458",
+                Time = 3
+            })
+            
+            spawn(function()
+                while farming do
+                    local bossFolder = workspace:WaitForChild("World Mobs"):WaitForChild("Event Mobs")
+                    
+                    local boss = nil
+                    for _, mob in ipairs(bossFolder:GetChildren()) do
+                        if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
+                            if mob:FindFirstChild("HumanoidRootPart") then
+                                boss = mob
+                                break
+                            end
+                        end
+                    end
+                    
+                    if boss and boss:FindFirstChild("HumanoidRootPart") then
+                        local root = boss.HumanoidRootPart
+                        local bossCFrame = root.CFrame
+                        
+                        -- === CHỈNH CFRAME TRƯỚC MẶT BOSS ===
+                        local frontCFrame = bossCFrame * CFrame.new(0, 0, -8)   -- 8 studs trước mặt boss
+                        
+                        local args = {
+                            {
+                                Camera = workspace.CurrentCamera.CFrame,
+                                SkillId = "101",
+                                Began = true,
+                                CFrame = frontCFrame,           -- CFrame trước mặt
+                                ["Typ\208\181"] = 1,
+                                Aim = bossCFrame.Position       -- Aim vào boss
+                            }
+                        }
+                        
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SkillRemote"):FireServer(unpack(args))
+                    end
+                    
+                    wait(0.0001)
+                end
+            end)
+            
+        else
+            OrionLib:MakeNotification({
+                Name = "Farm Stopped",
+                Content = "Đã dừng farm boss",
+                Image = "rbxassetid://4483362458",
+                Time = 3
+            })
+        end
+    end
+})
+
+Tab8:AddToggle({
+    Name = "Auto (Next Area)",
+    Default = True,
+    Flag = "AutoPlay",
+    Callback = function(Value)
+        _G.AutoPlay = Value
+        spawn(function()
+            while _G.AutoPlay do
+                local args = {true}
+                pcall(function()
+                    workspace:WaitForChild("Dungeon"):WaitForChild("Stages"):WaitForChild("0"):WaitForChild("NextArea"):WaitForChild("DungeonNextAreaPad"):WaitForChild("RE"):WaitForChild("Interact"):FireServer(unpack(args))
+                end)
+                task.wait(2.4)
+            end
+        end)
+    end
+})
+Tab8:AddToggle({
+    Name = "Godmode",
+    Default = false,
+    Callback = function(v)
+        getgenv().AntiDie = v
+        spawn(function()
+            while getgenv().AntiDie do
+                task.wait()
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = CFrame.new(70.4524002, 247.817719, -16.9801903, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+                    char.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+                end
+            end
+        end)
+    end
 })
