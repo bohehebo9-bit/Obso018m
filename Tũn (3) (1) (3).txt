@@ -2665,7 +2665,7 @@ Tab8:AddToggle({
                 task.wait()
                 local char = game.Players.LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
-                    char.HumanoidRootPart.CFrame = CFrame.new(70.4524002, 247.817719, -16.9801903, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+                    char.HumanoidRootPart.CFrame = CFrame.new(-404.102966, 1279.00037, 92.0820236, 1, 0, 0, 0, 1, 0, 0, 0, 1)
                     char.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
                 end
             end
@@ -2673,149 +2673,23 @@ Tab8:AddToggle({
     end
 })
 
-
-local tracking = false
-local kills = 0
-local totalDamage = 0
-local lastHealth = 0
-local lastTime = tick()
-
-local dpsLabel = Tab:AddLabel("HP Loss/s: 0")
-local killPerHourLabel = Tab:AddLabel("Kill/Hour: 0")
-local killCountLabel = Tab:AddLabel("Total Kills: 0")
-
-local function updateStats(dps, kph)
-    dpsLabel:Set("HP Loss/s: " .. math.floor(dps))
-    killPerHourLabel:Set("Kill/Hour: " .. math.floor(kph))
-    killCountLabel:Set("Total Kills: " .. kills)
-end
+local AutoLockAtom = false
 
 Tab8:AddToggle({
-    Name = "Check boss  ",
-    Default = false,
-    Callback = function(state)
-        tracking = state
-        
-        if tracking then
-            kills = 0
-            totalDamage = 0
-            lastHealth = 0
-            lastTime = tick()
-            
-            OrionLib:MakeNotification({
-                Name = "Tracker Started",
-                Content = "Đang theo dõi HP Loss & Kill...",
-                Image = "rbxassetid://4483362458",
-                Time = 3
-            })
-            
-            spawn(function()
-                while tracking do
-                    local bossFolder = workspace:WaitForChild("World Mobs"):WaitForChild("Event Mobs")
-                    
-                    local boss = nil
-                    for _, mob in ipairs(bossFolder:GetChildren()) do
-                        if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 and mob:FindFirstChild("HumanoidRootPart") then
-                            boss = mob
-                            break
-                        end
-                    end
-                    
-                    if boss then
-                        local humanoid = boss.Humanoid
-                        local currentHealth = humanoid.Health
-                        
-                        -- Tính HP Loss mỗi giây
-                        if lastHealth > 0 then
-                            local damageThisTick = lastHealth - currentHealth
-                            if damageThisTick > 0 then
-                                totalDamage = totalDamage + damageThisTick
-                            end
-                        end
-                        
-                        local currentTime = tick()
-                        local timePassed = currentTime - lastTime
-                        
-                        local currentDPS = 0
-                        if timePassed >= 1 then
-                            currentDPS = totalDamage / timePassed
-                            totalDamage = 0
-                            lastTime = currentTime
-                        end
-                        
-                        -- Phát hiện Kill
-                        if lastHealth > 0 and currentHealth <= 0 then
-                            kills = kills + 1
-                        end
-                        
-                        lastHealth = currentHealth
-                        
-                        -- Update Stats
-                        local totalTime = currentTime - (lastTime - timePassed) + 1
-                        local killPerHour = (kills / math.max(totalTime, 1)) * 3600
-                        
-                        updateStats(currentDPS, killPerHour)
-                        
-                    else
-                        lastHealth = 0
-                    end
-                    
-                    wait(0.1)  -- Giảm tần suất vì không cần farm
-                end
-            end)
-            
-        else
-            OrionLib:MakeNotification({
-                Name = "Tracker Stopped",
-                Content = "Đã dừng theo dõi boss",
-                Image = "rbxassetid://4483362458",
-                Time = 3
-            })
-        end
-    end
-})
-
-Tab8:AddButton({
-    Name = "Reset Stats",
-    Callback = function()
-        kills = 0
-        totalDamage = 0
-        lastHealth = 0
-        updateStats(0, 0)
-    end
-})
-
-
-
-local AutoBoss = false
-
-Tab8:AddToggle({
-	Name = "Auto Boss v1",
+	Name = "auto lock Atom",
 	Default = false,
-	Callback = function(v)
-		AutoBoss = v
+	Callback = function(Value)
+		AutoLockAtom = Value
 
-		task.spawn(function()
-			while AutoBoss do
-				pcall(function()
-					local plr = game.Players.LocalPlayer
-					local char = plr.Character
-					local hrp = char and char:FindFirstChild("HumanoidRootPart")
-
-					local EventMobs = workspace:WaitForChild("World Mobs"):WaitForChild("Event Mobs")
-
-					local Boss
-
-					for _,v in ipairs(EventMobs:GetChildren()) do
-						if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") then
-							Boss = v
-							break
-						end
-					end
-
-					if Boss and hrp then
-						hrp.CFrame = Boss.HumanoidRootPart.CFrame * CFrame.new(0,22,0)
-						hrp.AssemblyLinearVelocity = Vector3.zero
+		if AutoLockAtom then
+			task.spawn(function()
+				while AutoLockAtom do
+					pcall(function()
+						local args = {
+							workspace:WaitForChild("World Mobs")
+								:WaitForChild("Event Mobs")
+								:WaitForChild("Atom Max")
+						}
 
 						game:GetService("ReplicatedStorage")
 							:WaitForChild("Packages")
@@ -2826,158 +2700,14 @@ Tab8:AddToggle({
 							:WaitForChild("SkillManager")
 							:WaitForChild("RE")
 							:WaitForChild("LockedOnChanged")
-							:FireServer(Boss)
-					end
-				end)
+							:FireServer(unpack(args))
+					end)
 
-				task.wait(0.01)
-			end
-		end)
+					task.wait(0.01)
+				end
+			end)
+		end
 	end
 })
-local tracking = false
-local positionLocked = false
-local kills = 0
-local totalDamage = 0
-local lastHealth = 0
-local lastTime = tick()
-
-local dpsLabel = Tab:AddLabel("HP Loss/s: 0")
-local killPerHourLabel = Tab8:AddLabel("Kill/Hour: 0")
-local killCountLabel = Tab8:AddLabel("Total Kills: 0")
-
-local targetCFrame = CFrame.new(-595.139893, 1457.84875, -285.948608, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-
-local function updateStats(dps, kph)
-    dpsLabel:Set("HP Loss/s: " .. math.floor(dps))
-    killPerHourLabel:Set("Kill/Hour: " .. math.floor(kph))
-    killCountLabel:Set("Total Kills: " .. kills)
-end
-
--- ==================== AUTO LOCK POSITION ====================
-Tab8:AddToggle({
-    Name = "Auto boss V2)",
-    Default = false,
-    Callback = function(state)
-        positionLocked = state
-        local root = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        
-        if positionLocked and root then
-            OrionLib:MakeNotification({
-                Name = "Position Locked",
-                Content = "Đã khóa vị trí cố định",
-                Image = "rbxassetid://4483362458",
-                Time = 3
-            })
-            
-            spawn(function()
-                while positionLocked do
-                    if root and root.Parent then
-                        root.CFrame = targetCFrame
-                        root.Velocity = Vector3.new(0,0,0)
-                        root.RotVelocity = Vector3.new(0,0,0)
-                    end
-                    wait(0.01)
-                end
-            end)
-        else
-            OrionLib:MakeNotification({
-                Name = "Position Unlocked",
-                Content = "Đã bỏ khóa vị trí",
-                Image = "rbxassetid://4483362458",
-                Time = 3
-            })
-        end
-    end
-})
-
--- ==================== BOSS STATS TRACKER ====================
-Tab8:AddToggle({
-    Name = "Enable Boss Stats Tracker",
-    Default = false,
-    Callback = function(state)
-        tracking = state
-        
-        if tracking then
-            kills = 0
-            totalDamage = 0
-            lastHealth = 0
-            lastTime = tick()
-            
-            OrionLib:MakeNotification({
-                Name = "Tracker Started",
-                Content = "Đang theo dõi HP Loss & Kill...",
-                Image = "rbxassetid://4483362458",
-                Time = 3
-            })
-            
-            spawn(function()
-                while tracking do
-                    local bossFolder = workspace:WaitForChild("World Mobs"):WaitForChild("Event Mobs")
-                    
-                    local boss = nil
-                    for _, mob in ipairs(bossFolder:GetChildren()) do
-                        if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 and mob:FindFirstChild("HumanoidRootPart") then
-                            boss = mob
-                            break
-                        end
-                    end
-                    
-                    if boss then
-                        local humanoid = boss.Humanoid
-                        local currentHealth = humanoid.Health
                         
-                        if lastHealth > 0 then
-                            local damageThisTick = lastHealth - currentHealth
-                            if damageThisTick > 0 then
-                                totalDamage = totalDamage + damageThisTick
-                            end
-                        end
-                        
-                        local currentTime = tick()
-                        local timePassed = currentTime - lastTime
-                        
-                        local currentDPS = 0
-                        if timePassed >= 1 then
-                            currentDPS = totalDamage / timePassed
-                            totalDamage = 0
-                            lastTime = currentTime
-                        end
-                        
-                        if lastHealth > 0 and currentHealth <= 0 then
-                            kills = kills + 1
-                        end
-                        
-                        lastHealth = currentHealth
-                        
-                        local totalTime = currentTime - (lastTime - timePassed) + 1
-                        local killPerHour = (kills / math.max(totalTime, 1)) * 3600
-                        
-                        updateStats(currentDPS, killPerHour)
-                    else
-                        lastHealth = 0
-                    end
-                    
-                    wait(0.1)
-                end
-            end)
-        else
-            OrionLib:MakeNotification({
-                Name = "Tracker Stopped",
-                Content = "Đã dừng theo dõi boss",
-                Image = "rbxassetid://4483362458",
-                Time = 3
-            })
-        end
-    end
-})
-
-Tab:AddButton({
-    Name = "Reset Stats",
-    Callback = function()
-        kills = 0
-        totalDamage = 0
-        lastHealth = 0
-        updateStats(0, 0)
-    end
-})
+                                            
