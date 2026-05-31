@@ -2765,3 +2765,58 @@ Tab9:AddToggle({
 		end
 	end
 })
+
+
+local AutoDestroy = false
+
+Tab9:AddToggle({
+	Name = "Auto Destroy",
+	Default = false,
+	Callback = function(Value)
+		AutoDestroy = Value
+
+		if AutoDestroy then
+			task.spawn(function()
+				while AutoDestroy do
+					local args = {
+						{
+							Camera = CFrame.new(
+								-395.022705078125, 1214.2740478515625, 99.45259857177734,
+								0.6302247047424316, 0.764617383480072, 0.13482312858104706,
+								0, 0.17364877462387085, -0.9848077297210693,
+								-0.776412844657898, 0.6206501722335815, 0.1094377413392067
+							),
+							SkillId = "108",
+							["Typе"] = 1,
+							Began = true,
+							CFrame = CFrame.new(
+								-404.10296630859375,
+								1279.0003662109375,
+								92.08202362060547
+							),
+							Target = workspace:WaitForChild("World Map")
+								:WaitForChild("Cell Max Arena Venue")
+								:WaitForChild("Island")
+								:WaitForChild("Model")
+								:WaitForChild("Part"),
+							Aim = Vector3.new(
+								-404.10296630859375,
+								1279.0003662109375,
+								42.08202362060547
+							)
+						}
+					}
+
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Remotes")
+						:WaitForChild("SkillRemote")
+						:FireServer(unpack(args))
+
+					task.wait(0.1)
+				end
+			end)
+		end
+	end
+})
+
+OrionLib:Init()
