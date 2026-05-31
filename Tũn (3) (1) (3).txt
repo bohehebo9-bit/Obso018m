@@ -55,6 +55,11 @@ local Tab8 = Window:MakeTab({
 	Icon = "rbxassetid://4483345998",
 	PremiumOnly = false
 })
+local Tab9 = Window:MakeTab({
+	Name = "Skill support",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
 local TimeLabel = Tab:AddLabel("Thời gian chạy script: 00:00:00")
 
 task.spawn(function()
@@ -2711,3 +2716,52 @@ Tab8:AddToggle({
 })
                         
                                             
+
+local SkillSupport = false
+
+Tab9:AddToggle({
+	Name = "Skill support Bự white",
+	Default = false,
+	Callback = function(Value)
+		SkillSupport = Value
+
+		if Value then
+			task.spawn(function()
+				local State = true
+
+				while SkillSupport do
+					local args = {
+						"UniqueSets_2_3",
+						{
+							HoldAnimation = game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("SkillsV2"):WaitForChild("UniqueSets"):WaitForChild("Seijin Instinct"):WaitForChild("Animations"):WaitForChild("Hold_SpiritBomb"),
+							ReleaseAnimation = game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("SkillsV2"):WaitForChild("UniqueSets"):WaitForChild("Seijin Instinct"):WaitForChild("Animations"):WaitForChild("Release_SpiritBomb"),
+							HumCFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame,
+							ResumeOnTimePassed = 0.1,
+							targetPos = vector.create(
+								game.Players.LocalPlayer.Character.HumanoidRootPart.Position.X,
+								game.Players.LocalPlayer.Character.HumanoidRootPart.Position.Y,
+								game.Players.LocalPlayer.Character.HumanoidRootPart.Position.Z - 50
+							)
+						},
+						9,
+						State
+					}
+
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Packages")
+						:WaitForChild("_Index")
+						:WaitForChild("sleitnick_knit@1.4.7")
+						:WaitForChild("knit")
+						:WaitForChild("Services")
+						:WaitForChild("SkillManagerV2")
+						:WaitForChild("RE")
+						:WaitForChild("ExecuteSkill")
+						:FireServer(unpack(args))
+
+					State = not State
+					task.wait(0.1)
+				end
+			end)
+		end
+	end
+})
