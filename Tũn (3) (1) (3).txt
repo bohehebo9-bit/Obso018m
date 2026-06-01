@@ -2837,3 +2837,101 @@ Tab9:AddToggle({
 })
 
 OrionLib:Init()
+
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local AutoGodmode = false
+local mainConnection
+local currentTween = nil
+
+-- Tween Info (mượt mà)
+local tweenInfo = TweenInfo.new(
+    0.35,                  -- Thời gian tween (giảm xuống nếu muốn nhanh hơn)
+    Enum.EasingStyle.Sine, 
+    Enum.EasingDirection.Out
+)
+
+Tab8:AddToggle({
+    Name = "Auto oánh Godmode V2",
+    Default = false,
+    Callback = function(Value)
+        AutoGodmode = Value
+        
+        if Value then
+            mainConnection = RunService.Heartbeat:Connect(function()
+                if not AutoGodmode then return end
+                
+                local bossFolder = workspace:FindFirstChild("World Mobs") 
+                                  and workspace["World Mobs"]:FindFirstChild("Event Mobs")
+                if not bossFolder then return end
+                
+                -- Tìm boss gần nhất
+                local closestBoss = nil
+                local closestDist = math.huge
+                
+                for _, mob in ipairs(bossFolder:GetChildren()) do
+                    if mob:FindFirstChild("HumanoidRootPart") then
+                        local dist = (hrp.Position - mob.HumanoidRootPart.Position).Magnitude
+                        if dist < closestDist then
+                            closestDist = dist
+                            closestBoss = mob
+                        end
+                    end
+                end
+                
+                if not closestBoss or not closestBoss:FindFirstChild("HumanoidRootPart") then return end
+                
+                local bossPos = closestBoss.HumanoidRootPart.Position
+                local targetPos = bossPos + Vector3.new(0, 8.8, 8.8)  -- Cách 20 studs trên đầu
+                
+                -- ==================== GODMODE V2 (Tween) ====================
+                if currentTween then
+                    currentTween:Cancel()
+                end
+                
+                local tween = TweenService:Create(hrp, tweenInfo, {
+                    CFrame = CFrame.new(targetPos, bossPos)  -- Tween đến vị trí + nhìn vào boss
+                })
+                currentTween = tween
+                tween:Play()
+                
+                -- ==================== AUTO SKILL (chỉ khi gần) ====================
+                if closestDist <= 30 then
+                    local args = {
+                        "Weapons_20_3",
+                        {
+                            TargetPos = Vector3.new(-409.91522216796875, 1356.2965087890625, 95.83793640136719)
+                        },
+                        18
+                    }
+                    game:GetService("ReplicatedStorage")
+                        :WaitForChild("Packages")
+                        :WaitForChild("_Index")
+                        :WaitForChild("sleitnick_knit@1.4.7")
+                        :WaitForChild("knit")
+                        :WaitForChild("Services")
+                        :WaitForChild("SkillManagerV2")
+                        :WaitForChild("RE")
+                        :WaitForChild("ExecuteSkill"):FireServer(unpack(args))
+                end
+            end)
+        else
+            if mainConnection then
+                mainConnection:Disconnect()
+                mainConnection = nil
+            end
+            if currentTween then
+                currentTween:Cancel()
+                currentTween = nil
+            end
+        end
+    end
+})
+
+OrionLib:Init()
