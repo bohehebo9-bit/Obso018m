@@ -2839,6 +2839,7 @@ Tab9:AddToggle({
 OrionLib:Init()
 
 
+
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
@@ -2848,17 +2849,13 @@ local RunService = game:GetService("RunService")
 
 local AutoGodmode = false
 local mainConnection
-local currentTween = nil
+local currentBoss = nil
 
--- Tween Info (mượt mà)
-local tweenInfo = TweenInfo.new(
-    0.35,                  -- Thời gian tween (giảm xuống nếu muốn nhanh hơn)
-    Enum.EasingStyle.Sine, 
-    Enum.EasingDirection.Out
-)
+-- ==================== CÀI ĐẶT ====================
+local HEIGHT_ABOVE = 8.8  -- Cách đầu boss 8.8 studs
 
 Tab8:AddToggle({
-    Name = "Auto oánh Godmode V2",
+    Name = "Auto Skill + Godmode V2 (Tween Mượt)",
     Default = false,
     Callback = function(Value)
         AutoGodmode = Value
@@ -2869,14 +2866,18 @@ Tab8:AddToggle({
                 
                 local bossFolder = workspace:FindFirstChild("World Mobs") 
                                   and workspace["World Mobs"]:FindFirstChild("Event Mobs")
-                if not bossFolder then return end
+                
+                if not bossFolder then 
+                    currentBoss = nil
+                    return 
+                end
                 
                 -- Tìm boss gần nhất
                 local closestBoss = nil
                 local closestDist = math.huge
                 
                 for _, mob in ipairs(bossFolder:GetChildren()) do
-                    if mob:FindFirstChild("HumanoidRootPart") then
+                    if mob:FindFirstChild("HumanoidRootPart") and mob.Humanoid.Health > 0 then
                         local dist = (hrp.Position - mob.HumanoidRootPart.Position).Magnitude
                         if dist < closestDist then
                             closestDist = dist
@@ -2885,23 +2886,27 @@ Tab8:AddToggle({
                     end
                 end
                 
-                if not closestBoss or not closestBoss:FindFirstChild("HumanoidRootPart") then return end
+                currentBoss = closestBoss
                 
-                local bossPos = closestBoss.HumanoidRootPart.Position
-                local targetPos = bossPos + Vector3.new(0, 8.8, 8.8)  -- Cách 20 studs trên đầu
-                
-                -- ==================== GODMODE V2 (Tween) ====================
-                if currentTween then
-                    currentTween:Cancel()
+                if not currentBoss or not currentBoss:FindFirstChild("HumanoidRootPart") then
+                    return
                 end
                 
+                local bossHRP = currentBoss.HumanoidRootPart
+                local targetPos = bossHRP.Position + Vector3.new(0, HEIGHT_ABOVE, 0)
+                
+                -- ==================== FIX RƠI + GIẬT (Dùng CFrame + Velocity = 0) ====================
+                hrp.Velocity = Vector3.new(0, 0, 0)
+                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                
+                -- Tween mượt đến vị trí trên đầu boss
+                local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
                 local tween = TweenService:Create(hrp, tweenInfo, {
-                    CFrame = CFrame.new(targetPos, bossPos)  -- Tween đến vị trí + nhìn vào boss
+                    CFrame = CFrame.new(targetPos, bossHRP.Position)
                 })
-                currentTween = tween
                 tween:Play()
                 
-                -- ==================== AUTO SKILL (chỉ khi gần) ====================
+                -- ==================== AUTO SKILL (chỉ khi gần 30 studs) ====================
                 if closestDist <= 30 then
                     local args = {
                         "Weapons_20_3",
@@ -2926,12 +2931,10 @@ Tab8:AddToggle({
                 mainConnection:Disconnect()
                 mainConnection = nil
             end
-            if currentTween then
-                currentTween:Cancel()
-                currentTween = nil
-            end
+            currentBoss = nil
         end
     end
 })
 
 OrionLib:Init()
+                                    if         
