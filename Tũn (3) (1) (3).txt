@@ -1,5 +1,5 @@
 local Blacklist = {
-    ["KaiToHuyDz"] = true,
+    ["KaiToHuyDz"] = false,
     ["Player2"] = true,
     ["Player3"] = true
 }
