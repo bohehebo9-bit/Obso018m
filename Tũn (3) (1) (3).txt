@@ -2986,3 +2986,43 @@ Tab8:AddToggle({
 		end
 	end
 })
+local AutoGun = false
+
+Tab9:AddToggle({
+	Name = "Auto súng",
+	Default = false,
+	Callback = function(Value)
+		AutoGun = Value
+
+		if AutoGun then
+			task.spawn(function()
+				while AutoGun do
+					local args = {
+						"Weapons_6_1",
+						{
+							TargetPos = vector.create(
+								-248.6935272216797,
+								5.799997329711914,
+								-47.82030487060547
+							)
+						},
+						68
+					}
+
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Packages")
+						:WaitForChild("_Index")
+						:WaitForChild("sleitnick_knit@1.4.7")
+						:WaitForChild("knit")
+						:WaitForChild("Services")
+						:WaitForChild("SkillManagerV2")
+						:WaitForChild("RE")
+						:WaitForChild("ExecuteSkill")
+						:FireServer(unpack(args))
+
+					task.wait()
+				end
+			end)
+		end
+	end
+})
