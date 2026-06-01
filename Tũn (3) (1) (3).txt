@@ -2840,22 +2840,29 @@ OrionLib:Init()
 
 
 
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local hrp = character:WaitForChild("HumanoidRootPart")
+                
+                
 
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+-- Cập nhật lại character khi respawn
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    hrp = newChar:WaitForChild("HumanoidRootPart")
+end)
+
 local AutoGodmode = false
 local mainConnection
-local currentBoss = nil
 
--- ==================== CÀI ĐẶT ====================
-local HEIGHT_ABOVE = 8.8  -- Cách đầu boss 8.8 studs
+local HEIGHT_ABOVE = 8.8
 
 Tab8:AddToggle({
-    Name = "Auto Skill + Godmode V2 (Tween Mượt)",
+    Name = "Auto Skill + Godmode V2 (Chạy Liên Tục)",
     Default = false,
     Callback = function(Value)
         AutoGodmode = Value
@@ -2863,22 +2870,22 @@ Tab8:AddToggle({
         if Value then
             mainConnection = RunService.Heartbeat:Connect(function()
                 if not AutoGodmode then return end
+                if not hrp or not hrp.Parent then return end
                 
                 local bossFolder = workspace:FindFirstChild("World Mobs") 
                                   and workspace["World Mobs"]:FindFirstChild("Event Mobs")
                 
-                if not bossFolder then 
-                    currentBoss = nil
-                    return 
-                end
+                if not bossFolder then return end
                 
-                -- Tìm boss gần nhất
+                -- Tìm boss gần nhất (chỉ boss còn sống)
                 local closestBoss = nil
                 local closestDist = math.huge
                 
                 for _, mob in ipairs(bossFolder:GetChildren()) do
-                    if mob:FindFirstChild("HumanoidRootPart") and mob.Humanoid.Health > 0 then
-                        local dist = (hrp.Position - mob.HumanoidRootPart.Position).Magnitude
+                    local humanoid = mob:FindFirstChild("Humanoid")
+                    local root = mob:FindFirstChild("HumanoidRootPart")
+                    if root and humanoid and humanoid.Health > 0 then
+                        local dist = (hrp.Position - root.Position).Magnitude
                         if dist < closestDist then
                             closestDist = dist
                             closestBoss = mob
@@ -2886,27 +2893,26 @@ Tab8:AddToggle({
                     end
                 end
                 
-                currentBoss = closestBoss
-                
-                if not currentBoss or not currentBoss:FindFirstChild("HumanoidRootPart") then
+                if not closestBoss or not closestBoss:FindFirstChild("HumanoidRootPart") then
                     return
                 end
                 
-                local bossHRP = currentBoss.HumanoidRootPart
+                local bossHRP = closestBoss.HumanoidRootPart
                 local targetPos = bossHRP.Position + Vector3.new(0, HEIGHT_ABOVE, 0)
                 
-                -- ==================== FIX RƠI + GIẬT (Dùng CFrame + Velocity = 0) ====================
+                -- Fix rơi + giật mạnh
                 hrp.Velocity = Vector3.new(0, 0, 0)
                 hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
                 
-                -- Tween mượt đến vị trí trên đầu boss
-                local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+                -- Tween mượt
+                local tweenInfo = TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
                 local tween = TweenService:Create(hrp, tweenInfo, {
                     CFrame = CFrame.new(targetPos, bossHRP.Position)
                 })
                 tween:Play()
                 
-                -- ==================== AUTO SKILL (chỉ khi gần 30 studs) ====================
+                -- Auto Skill chỉ khi gần
                 if closestDist <= 30 then
                     local args = {
                         "Weapons_20_3",
@@ -2915,15 +2921,17 @@ Tab8:AddToggle({
                         },
                         18
                     }
-                    game:GetService("ReplicatedStorage")
-                        :WaitForChild("Packages")
-                        :WaitForChild("_Index")
-                        :WaitForChild("sleitnick_knit@1.4.7")
-                        :WaitForChild("knit")
-                        :WaitForChild("Services")
-                        :WaitForChild("SkillManagerV2")
-                        :WaitForChild("RE")
-                        :WaitForChild("ExecuteSkill"):FireServer(unpack(args))
+                    pcall(function()
+                        game:GetService("ReplicatedStorage")
+                            :WaitForChild("Packages")
+                            :WaitForChild("_Index")
+                            :WaitForChild("sleitnick_knit@1.4.7")
+                            :WaitForChild("knit")
+                            :WaitForChild("Services")
+                            :WaitForChild("SkillManagerV2")
+                            :WaitForChild("RE")
+                            :WaitForChild("ExecuteSkill"):FireServer(unpack(args))
+                    end)
                 end
             end)
         else
@@ -2931,10 +2939,8 @@ Tab8:AddToggle({
                 mainConnection:Disconnect()
                 mainConnection = nil
             end
-            currentBoss = nil
         end
     end
 })
 
 OrionLib:Init()
-                                             
