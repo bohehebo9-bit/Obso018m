@@ -15,13 +15,13 @@ for _, player in ipairs(game.Players:GetPlayers()) do
         player:Kick("You get banned Script 3 weeks reason ngu")
     end
 end
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/duysira5/Hehe/refs/heads/main/Orion.lua.txt"))()
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/bohehebo9-bit/Aqua/refs/heads/main/Orion_Aqua_Transparent.lua"))()
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Window = OrionLib:MakeWindow({
-	Name = "Dragon Blox V2",
+	Name = "Dragon Blox V2.1⭐",
 	HidePremium = false,
 	SaveConfig = true,
 	ConfigFolder = "Config"
@@ -1996,7 +1996,22 @@ Corner2.Parent = Image
 Toggle.MouseButton1Click:Connect(function()
   OrionLib:ToggleUi()
 end)
+local NoCooldown = true
 
+Tab6:AddToggle({
+    Name = "No Cooldown Premium ⭐",
+    Default = true,
+    Callback = function(v)
+        if not v then
+            NoCooldown = true
+            OrionLib:MakeNotification({
+                Name = "Premium",
+                Content = "Không thể tắt!",
+                Time = 2
+            })
+        end
+    end
+})
 local AntiAFK = false
 
 Tab6:AddToggle({
