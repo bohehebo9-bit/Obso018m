@@ -21,7 +21,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Window = OrionLib:MakeWindow({
-	Name = "Dragon Blox V2.1⭐",
+	Name = "Dragon Blox V2.18⭐",
 	HidePremium = false,
 	SaveConfig = true,
 	ConfigFolder = "Config"
@@ -2532,7 +2532,7 @@ Tab7:AddToggle({
 })
 local AutoStartDungeonV2 = true -- Mở sẵn
 
-Tab:AddToggle({
+Tab8:AddToggle({
     Name = "Auto start v2",
     Default = true,
     Callback = function(Value)
