@@ -2530,85 +2530,136 @@ Tab7:AddToggle({
 		end)
 	end
 })
-local AutoStartDungeonV2 = false
+local AutoStartDungeonV2 = true -- Mở sẵn
 
-Tab8:AddToggle({
-	Name = "Auto Start Work All Dungeon V2",
-	Default = false,
-	Callback = function(Value)
-		AutoStartDungeonV2 = Value
+Tab:AddToggle({
+    Name = "Auto start v2",
+    Default = true,
+    Callback = function(Value)
+        AutoStartDungeonV2 = Value
 
-		if AutoStartDungeonV2 then
-			task.spawn(function()
-				local EventMobs = workspace:WaitForChild("World Mobs"):WaitForChild("Event Mobs")
+        task.spawn(function()
+            while AutoStartDungeonV2 do
+                pcall(function()
+                    local BossFound = nil
 
-				while AutoStartDungeonV2 do
-					local BossFound = nil
+                    for _, Boss in ipairs(EventMobs:GetChildren()) do
+                        local Humanoid = Boss:FindFirstChildWhichIsA("Humanoid")
 
-					-- Tìm boss có humanoid và đang full máu
-					for _, Boss in pairs(EventMobs:GetChildren()) do
-						local Humanoid = Boss:FindFirstChildWhichIsA("Humanoid")
+                        if Humanoid and Humanoid.Health > 0 and Humanoid.Health >= Humanoid.MaxHealth then
+                            BossFound = Boss
+                            break
+                        end
+                    end
 
-						if Humanoid and Humanoid.Health > 0 and Humanoid.Health >= Humanoid.MaxHealth then
-							BossFound = Boss
-							break
-						end
-					end
+                    if BossFound then
+                        local Humanoid = BossFound:FindFirstChildWhichIsA("Humanoid")
 
-					if BossFound then
-						local Humanoid = BossFound:FindFirstChildWhichIsA("Humanoid")
+                        while AutoStartDungeonV2
+                            and BossFound.Parent
+                            and Humanoid
+                            and Humanoid.Health > 0 do
+                            task.wait(1)
+                        end
 
-						-- Đợi boss chết
-						while AutoStartDungeonV2
-							and BossFound.Parent
-							and Humanoid
-							and Humanoid.Health > 0 do
-							task.wait(1)
-						end
+                        if AutoStartDungeonV2 then
+                            task.wait(5)
 
-						if not AutoStartDungeonV2 then
-							break
-						end
+                            pcall(function()
+                                game:GetService("ReplicatedStorage")
+                                    :WaitForChild("Packages")
+                                    :WaitForChild("_Index")
+                                    :WaitForChild("sleitnick_knit@1.4.7")
+                                    :WaitForChild("knit")
+                                    :WaitForChild("Services")
+                                    :WaitForChild("DungeonLobbyService")
+                                    :WaitForChild("RF")
+                                    :WaitForChild("StartDungeon")
+                                    :InvokeServer()
+                            end)
+                        end
+                    else
+                        pcall(function()
+                            game:GetService("ReplicatedStorage")
+                                :WaitForChild("Packages")
+                                :WaitForChild("_Index")
+                                :WaitForChild("sleitnick_knit@1.4.7")
+                                :WaitForChild("knit")
+                                :WaitForChild("Services")
+                                :WaitForChild("DungeonLobbyService")
+                                :WaitForChild("RF")
+                                :WaitForChild("StartDungeon")
+                                :InvokeServer()
+                        end)
+                    end
+                end)
 
-						task.wait(5)
-
-						pcall(function()
-							game:GetService("ReplicatedStorage")
-								:WaitForChild("Packages")
-								:WaitForChild("_Index")
-								:WaitForChild("sleitnick_knit@1.4.7")
-								:WaitForChild("knit")
-								:WaitForChild("Services")
-								:WaitForChild("DungeonLobbyService")
-								:WaitForChild("RF")
-								:WaitForChild("StartDungeon")
-								:InvokeServer()
-						end)
-
-						-- Đợi boss mới xuất hiện full máu rồi mới lặp tiếp
-						repeat
-							task.wait(1)
-
-							BossFound = nil
-
-							for _, Boss in pairs(EventMobs:GetChildren()) do
-								local H = Boss:FindFirstChildWhichIsA("Humanoid")
-
-								if H and H.Health > 0 and H.Health >= H.MaxHealth then
-									BossFound = Boss
-									break
-								end
-							end
-
-						until not AutoStartDungeonV2 or BossFound
-					end
-
-					task.wait(1)
-				end
-			end)
-		end
-	end
+                task.wait(1)
+            end
+        end)
+    end
 })
+
+task.spawn(function()
+    while AutoStartDungeonV2 do
+        pcall(function()
+            local BossFound = nil
+
+            for _, Boss in ipairs(EventMobs:GetChildren()) do
+                local Humanoid = Boss:FindFirstChildWhichIsA("Humanoid")
+
+                if Humanoid and Humanoid.Health > 0 and Humanoid.Health >= Humanoid.MaxHealth then
+                    BossFound = Boss
+                    break
+                end
+            end
+
+            if BossFound then
+                local Humanoid = BossFound:FindFirstChildWhichIsA("Humanoid")
+
+                while AutoStartDungeonV2
+                    and BossFound.Parent
+                    and Humanoid
+                    and Humanoid.Health > 0 do
+                    task.wait(1)
+                end
+
+                if AutoStartDungeonV2 then
+                    task.wait(5)
+
+                    pcall(function()
+                        game:GetService("ReplicatedStorage")
+                            :WaitForChild("Packages")
+                            :WaitForChild("_Index")
+                            :WaitForChild("sleitnick_knit@1.4.7")
+                            :WaitForChild("knit")
+                            :WaitForChild("Services")
+                            :WaitForChild("DungeonLobbyService")
+                            :WaitForChild("RF")
+                            :WaitForChild("StartDungeon")
+                            :InvokeServer()
+                    end)
+                end
+            else
+                pcall(function()
+                    game:GetService("ReplicatedStorage")
+                        :WaitForChild("Packages")
+                        :WaitForChild("_Index")
+                        :WaitForChild("sleitnick_knit@1.4.7")
+                        :WaitForChild("knit")
+                        :WaitForChild("Services")
+                        :WaitForChild("DungeonLobbyService")
+                        :WaitForChild("RF")
+                        :WaitForChild("StartDungeon")
+                        :InvokeServer()
+                end)
+            end
+        end)
+
+        task.wait(1)
+    end
+end)
+
 local farming = false
 
 Tab8:AddToggle({
