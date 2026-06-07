@@ -2577,7 +2577,7 @@ Tab8:AddToggle({
                         end
                     end
 
-                    task.wait(0.5)
+                    task.wait(3)
                 end
             end)
         end
