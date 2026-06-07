@@ -2558,7 +2558,7 @@ Tab8:AddToggle({
                         end
 
                         if not MobAlive and #EventMobs:GetChildren() > 0 then
-                            task.wait(3)
+                            task.wait(4.5)
 
                             pcall(function()
                                 game:GetService("ReplicatedStorage")
@@ -2573,11 +2573,11 @@ Tab8:AddToggle({
                                     :InvokeServer()
                             end)
 
-                            task.wait(4)
+                            task.wait(4.5)
                         end
                     end
 
-                    task.wait(4)
+                    task.wait(4.5)
                 end
             end)
         end
