@@ -3016,3 +3016,37 @@ Tab9:AddToggle({
 		end
 	end
 })
+local InfDamageSSJB = false
+
+Tab8:AddToggle({
+    Name = "inf x0.25 damage Ssjb",
+    Default = false,
+    Callback = function(Value)
+        InfDamageSSJB = Value
+
+        if Value then
+            task.spawn(function()
+                while InfDamageSSJB do
+                    local args = {
+                        "Weapons_14_2",
+                        {},
+                        1
+                    }
+
+                    game:GetService("ReplicatedStorage")
+                        :WaitForChild("Packages")
+                        :WaitForChild("_Index")
+                        :WaitForChild("sleitnick_knit@1.4.7")
+                        :WaitForChild("knit")
+                        :WaitForChild("Services")
+                        :WaitForChild("SkillManagerV2")
+                        :WaitForChild("RE")
+                        :WaitForChild("ExecuteSkill")
+                        :FireServer(unpack(args))
+
+                    task.wait(0.0001)
+                end
+            end)
+        end
+    end
+})
